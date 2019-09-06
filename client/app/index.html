@@ -29,9 +29,10 @@
                 if (isValid) {
                     const contact = JSON.parse(JSON.stringify(newContact))
                     contact.fullName = contact.firstName + ' ' + contact.lastName;
-                    $http.post(PORT + 'api', contact)
+                    contact.id = $scope.items.length;
+                    $http.post(PORT + 'api/add', contact)
                         .then(response => {
-                            // console.log(response.data)
+                            console.log(response.data)
                             $scope.items.push(response.data)
                             Object.keys(newContact).forEach(item => newContact[item] = '')
                             $scope.showError = false;
@@ -44,7 +45,7 @@
             }
 
             $scope.deleteItem = (id) => {
-                $http.delete(PORT + 'api/' + id)
+                $http.delete(PORT + 'api/delete' + id)
                     .then(response => {
                         const element = $scope.items.find(element => element.id === id)
                         $scope.items.splice($scope.items.indexOf(element), 1)
@@ -60,7 +61,7 @@
                 const element = $scope.items.find(element => element._id === item._id)
                 item.fullName = item.firstName + ' ' + item.lastName
                 element.edited = false
-                $http.put(PORT + 'api', item)
+                $http.put(PORT + 'api/edit', item)
                     .then(response => {
                         $scope.items.splice($scope.items.indexOf(element), 1, item)
                     })
