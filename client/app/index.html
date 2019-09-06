@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="contactList">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact list</title>
+    <link rel="stylesheet" href="app.css">
+    <script src="lib/angular/angular.js"></script>
+    <script>
+        const app = angular.module("contactList", [])
+        app.controller('contactListController', ($scope, $http) => {
+            $scope.items = [];
+            const PORT = 'http://localhost:3000/'
+
+            $scope.getError = function (error) {
+                if (angular.isDefined(error)) {
+                    if (error.required) {
+                        return "Empty field";
+                    }
+                }
+            }
+
+            $http.get(PORT)
+                .then(response => {
+                    $scope.items = response.data
+                })
+                .catch(err => console.log('Error: ', err))
+
+            $scope.addItem = (newContact, isValid) => {
+                if (isValid) {
+                    const contact = JSON.parse(JSON.stringify(newContact))
+                    contact.fullName = contact.firstName + ' ' + contact.lastName;
+                    $http.post(PORT + 'api', contact)
+                        .then(response => {
+                            // console.log(response.data)
+                            $scope.items.push(response.data)
+                            Object.keys(newContact).forEach(item => newContact[item] = '')
+                            $scope.showError = false;
+                        })
+                        .catch(err => console.log('Error: ', err))
+                } else {
+                    $scope.message = "Error";
+                    $scope.showError = true;
+                }
+            }
+
+            $scope.deleteItem = (id) => {
+                $http.delete(PORT + 'api/' + id)
+                    .then(response => {
+                        const element = $scope.items.find(element => element.id === id)
+                        $scope.items.splice($scope.items.indexOf(element), 1)
+                    })
+                    .catch(err => console.log('Error: ', err))
+            }
+
+            $scope.editItem = (id) => {
+                $scope.items.find(element => element.id === id).edited = true
+            }
+
+            $scope.saveItem = (item) => {
+                const element = $scope.items.find(element => element._id === item._id)
+                item.fullName = item.firstName + ' ' + item.lastName
+                element.edited = false
+                $http.put(PORT + 'api', item)
+                    .then(response => {
+                        $scope.items.splice($scope.items.indexOf(element), 1, item)
+                    })
+                    .catch(err => console.log('Error: ', err))
+            }
+        })
+    </script>
+</head>
+<body ng-controller="contactListController">
+
+<form name="inputForm">
+    <div class="wrapper">
+    <div class="inner-wrapper">
+        <input required ng-model="contact.firstName" placeholder="First Name" class="input-item" name="firstName"/>
+        <div class="error" ng-show="showError">
+            {{getError(inputForm.firstName.$error)}}
+        </div>
+    </div>
+    <div class="inner-wrapper">
+        <input required ng-model="contact.lastName" placeholder="Last Name" class="input-item" name="lastName"/>
+        <div class="error" ng-show="showError">
+            {{getError(inputForm.lastName.$error)}}
+        </div>
+    </div>
+    <div class="inner-wrapper">
+        <input required ng-model="contact.phone" placeholder="Phone" class="input-item" name="phone"/>
+        <div class="error" ng-show="showError">
+            {{getError(inputForm.phone.$error)}}
+        </div>
+    </div>
+    <div class="inner-wrapper">
+        <input required ng-model="contact.cellPhone" placeholder="Cell phone" class="input-item" name="cellPhone"/>
+        <div class="error" ng-show="showError">
+            {{getError(inputForm.cellPhone.$error)}}
+        </div>
+    </div>
+    <div class="inner-wrapper">
+        <input required ng-model="contact.address" placeholder="Address" class="input-item" name="address"/>
+        <div class="error" ng-show="showError">
+            {{getError(inputForm.address.$error)}}
+        </div>
+    </div>
+    <button type="submit" ng-click="addItem(contact, inputForm.$valid)" class="add-button btn">Add</button>
+    </div>
+
+
+</form>
+<div ng-repeat="item in items" class="record-container">
+    <div>
+        <input ng-if="item.edited" ng-model="item.firstName" class="input-item">
+
+        <div class="record-item" ng-if="!item.edited">
+            {{item.firstName}}
+        </div>
+
+        <input ng-if="item.edited" ng-model="item.lastName" class="input-item">
+        <div class="record-item" ng-if="!item.edited">
+            {{item.lastName}}
+        </div>
+        <input ng-if="item.edited" ng-model="item.phone" class="input-item">
+        <div class="record-item" ng-if="!item.edited">
+            {{item.phone}}
+        </div>
+        <input ng-if="item.edited" ng-model="item.cellPhone" class="input-item">
+        <div class="record-item" ng-if="!item.edited">
+            {{item.cellPhone}}
+        </div>
+        <input ng-if="item.edited" ng-model="item.address" class="input-item">
+        <div class="record-item" ng-if="!item.edited">
+            {{item.address}}
+        </div>
+        <input ng-if="item.edited" ng-model="item.fullName" class="input-item">
+        <div class="record-item" ng-if="!item.edited">
+            {{item.fullName}}
+        </div>
+    </div>
+    <div class="buttons">
+        <button ng-click="deleteItem(item._id)" class="btn">Delete</button>
+        <div>
+            <button ng-if="!item.edited" ng-click="editItem(item.id)" class="btn">Edit</button>
+            <button ng-if="item.edited" ng-click="saveItem(item)" class="btn">Save</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

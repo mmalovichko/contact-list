@@ -1,0 +1,31 @@
+.input-item{
+    width: 180px;
+}
+.record-container{
+    display: flex;
+    margin-top: 30px;
+}
+.record-item{
+    display: inline-block;
+    width: 180px;
+    margin: auto 2px auto 2px;
+}
+.buttons{
+    display: flex;
+    justify-content: space-between;
+    width: 160px;
+    margin-left: 80px;
+}
+.btn{
+    width: 70px;
+    height: 25px;
+}
+.add-button{
+    margin-left: 260px;
+}
+.wrapper{
+    display: flex;
+}
+.inner-wrapper{
+    margin-right: 5px;
+}
